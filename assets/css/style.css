@@ -1,0 +1,34 @@
+* {
+  box-sizing: border-box;
+}
+
+/*------------------------------------------*/
+/* Component Styles Section*/
+/*------------------------------------------*/
+
+body {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 18px;
+  line-height: 30px;
+  color: #777777;
+  background-image: url('../images/concrete_wall_3.png');
+}
+
+h1 h2 h3 {
+	font-family: 'Georgia', Times, Times New Roman, serif;
+  color: #4aaaa5;
+  font-weight: 700;
+
+}
+
+
+footer {
+  clear: both;
+  background-color: #666666; /*Revelation 13:18*/
+  padding: 25px;
+  border-top: 8px solid #4aaaa5;
+  color: #a6a6a6;
+  text-align: center;
+  font-size: 0.5em;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
