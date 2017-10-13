@@ -1,58 +1,42 @@
-//Pseudo Code
-// Refresh page
-// Initializations onLoad of game window
-//      set global Wins to 0
-//      set maxGuesses to 15
-//      set numGuesses to 0
-//      set numLetters to 0 -- number of letters user has correctly guessed
-//      init guessedWord array to hiddenWord.length
-//      init lettersAlreadyGuessed array to blanks
-//      store RandomWord in targetWord
-//      store hint in targetHint
-//      Display initial messages:
-//          "Press any key to get started"
-//          winCount
-//          blanks equal to length of targetWord
-//          pastGuesses
-//          
+// Pseudo code
+//   On initial load of page:
+//      get a random 1950s group name from the quizWordList and store it in the targetWord variable
+//      initialize the screen with the title of the game, 0 wins, blank past guesses.
+//      set the resetGame flag in localStorage to "no" so we don't reset screen again until we've played a game.
 //
-//  document.onkeyup logic {
-//      currentGuess = String.fromCharCode(event.keyCode).toLowerCase();
-//      thrillOfVictoryMessage = "";
-//      if (userGuess is not alphabetic key) {
-//          display message "You must press an alphabetic key to play"
-//          
-//      } else {
-//          guessesCount++; //if user pressed an alphabetic key it counts as a guess
-//          
-//          if guessesCount > guessLimit {
-//             localStorage.setItem("hasCodeRunBefore", true); //force page reload next time user presses a key
-//             if currentMatchCount == length of targetWord {
-//                 thrillOfVictoryMsg = "Congratulations, You Won!"
-//                 winCount++
-//                 play song 
-//             } else {
-//                 thrillOfVictoryMsg = "Sorry, You Lost!"
-//             }
-//          } else {
-//              for each letter in userGuess {
-//                  add the userGuess letter to the end of the pastGuesses array
-//              }
-//              test to see whether userGuess is found in targetWord.
-//              if (userGuess does not match targetWord) {
-//                display "Letter not found message"
-//              } else {
-//                for each letter in userGuess that matches the targetWord {
-//                    store it in the matching position in currentMatchedLetters
-//                }
-//              }
-//          }
-//          update browser window with guessesCount, pastGuesses, currentMatchedLetters
-//          if thrillOfVictory message is not the empty string {
-//              Update browser window with thrillOfVictory message
-//          }
-//      } //end the "else alphabetic key was pressed" logic
-//   } // end the onkeyup logic  
+//  On key up event
+//      if the resetGame flag is set, reset the screen to initial displayed values but with current winCount
+//      grab the current guess key from the event and stuff into currentGuess
+//      if currentGuess is an alphabetic char OR a space
+//          -- it counts as a guess (we ignore numbers, punctuation, carriage return, etc)
+//          increment guessesCount
+//          if guessesCount > guessLimit
+//              -- user has lost the game
+//              display the loser message and tell user to press any key to continue
+//              set the resetGame flag in localStorage to "yes" so that we will reset the screen on the next key up event
+//              -- one could update a lossesCount variable here
+//          else
+//              -- at this point we have an alphabet char to compare and we know that we are within the guessesLimit
+//              -- so let's figure out if the guess matches one or more letters in targetWord
+//              call the matchGuess function in the game object. This function will compare the userGuess to targetWord. It will
+//               store the index for each of the matched latters in
+//               currentMatchedLetters and will return the number of matched letters.
+//              if the userGuess matched one or more letters in the targetWord
+//                clear out any invalid keypress message
+//                check to see whether currentMatchedLetters completely matches targetWord
+//                if complete match 
+//                  increment winCount
+//                  display victory message, play the song that matches the doowop group,  and "press any key to continue"
+//                  set the resetGame flag in localStorage to "yes" so that we will reset the screen on the next key up event
+//              else
+//                -- this is the "else" that processes case where userGuess was not a match for any of the chars in targetWord
+//                display the "did not match -- press any key to continue" message
+//                -- but leave the resetGame flag unset so we don't start a new game the next time user presses a key
+//      else
+//        -- this is the "else" that processes the case where userGuess is not an alphabetic char and not a space
+//        display the "please press an alphabetic key or the spacebar to make a guess" message
+//        -- but leave the resetGame flag unset so we don't start a new game the next time user presses a key
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var winsDiv         = $("<div>");
 var wordDiv         = $("<div>");
@@ -77,7 +61,7 @@ var hangmanGame = {
     hints:        ["Sherry Baby", "Blue Moon", "You Baby You", "Come Softly To Me", "Earth Angel"],
     randomWord: function() {
                 var randIndex = Math.floor(Math.random()*this.quizWordList.length);
-                console.log("This is the random index "+randIndex);
+                
                 this.targetWord =  this.quizWordList[randIndex];
                 this.targetHint =  this.hints[randIndex];
 
@@ -93,7 +77,7 @@ var hangmanGame = {
 
                 while (match = patt.exec(hangmanGame.targetWord)) {
                         matchString = "Found "+userGuess+" at location "+ match.index;
-                        console.log(matchString);
+                        
                         // Store the locations where the matching letter occurs
                         this.currentMatchedLetters[match.index] = userGuess;
                         // Increment the count of the matches
@@ -123,7 +107,7 @@ var hangmanGame = {
     getTargetWord: function() {
         // Grab one of the hiddenWords from the hiddenWords object
         hangmanGame.randomWord(); //get the word user is trying to guess as well as the hint and stuff them into the hangmanGame object
-        console.log("This is what I saw "+hangmanGame.targetWord);
+        
         //      init currentMatchedLetters array to "_"; one "_" for each letter in targetWord
         for (i=0; i<hangmanGame.targetWord.length;i++) {
           hangmanGame.currentMatchedLetters[i] = "_";
@@ -145,7 +129,7 @@ window.onload = function () {
 
     // And now display the initial values
     $("#hangmanGame").html("<h2>1950's Doowop Hangman!</h2>");
-    // $("hangmanGame").text("<h3>Press Any Key To Get Started!</h3><br><br>");
+    
     $("#winsDiv").text("Wins So Far: "+hangmanGame.winCount);
     $("#wordDiv").text("Current Word: "+hangmanGame.currentMatchedLetters);
     $("#pastGuessesDiv").text("Letters Already Guessed: "+hangmanGame.pastGuesses);
@@ -157,11 +141,9 @@ window.onload = function () {
 
 document.onkeyup = function() {
       
-
-        console.log("resetGame FLAG "+localStorage.getItem("resetGame"));
         
         if (localStorage.getItem("resetGame") == "yes") {
-            console.log("Resetting game");
+  
             hangmanGame.nextGame();
             $("#winsDiv").text("Wins So Far: "+hangmanGame.winCount);
             $("#wordDiv").text("Current Word: "+hangmanGame.currentMatchedLetters);
@@ -172,7 +154,7 @@ document.onkeyup = function() {
             localStorage.setItem("resetGame", "no");
         }
 
-        console.log("The secret is "+hangmanGame.targetWord);
+       
 
         hangmanGame.currentGuess = String.fromCharCode(event.keyCode).toLowerCase();
 
@@ -185,24 +167,21 @@ document.onkeyup = function() {
             $("#nextPrompt").text("Press any key to continue");
             localStorage.setItem("resetGame","yes");
           } else {//User has guesses remaining so let's play the guess!
-            console.log("Entered a "+hangmanGame.currentGuess);
 
             // we're going to put the currentGuess into the pastGuesses string.
             // the final char in this string is "]".
             var lastGuess = hangmanGame.pastGuesses.length-1; //position LastGuess on the final guessed char in pastGuesses string. 
-            console.log("lastGuess pos is "+lastGuess);
+          
             hangmanGame.pastGuesses = hangmanGame.pastGuesses.substring(0,lastGuess); //Grab just the guessed chars so far
-            console.log("now pastGuesses is "+hangmanGame.pastGuesses);
+         
             hangmanGame.pastGuesses = hangmanGame.pastGuesses+" "+hangmanGame.currentGuess+"]"; //add a space, followed by the user's current guess, followed by "]" to the end of pastGuesses
-            console.log("Past Guesses are "+hangmanGame.pastGuesses);
+            
             $("#pastGuessesDiv").text("Letters Already Guessed: "+hangmanGame.pastGuesses);
 
             //Now that the current userGuess is has been recorded, let's see if it's a match for any chars in targetWord
             if (hangmanGame.matchGuess(hangmanGame.currentGuess)) {
                 //The key that user guessed does match one or more letters in the targetWord
                 //The matchGuess method will have updated the currentMatchedLetters and totalMatchesCount
-                console.log(hangmanGame.currentMatchedLetters);
-                console.log(hangmanGame.totalMatchesCount);
 
                 //we know user did input a matching letter
                 //so clear out any error message
@@ -214,33 +193,38 @@ document.onkeyup = function() {
 
                 for (i=0; i<hangmanGame.targetWord.length; i++) {
                     var testChar = hangmanGame.targetWord[i].toLowerCase();
-                    console.log("comparing "+hangmanGame.currentMatchedLetters[i]+" "+testChar);
+                    
                     if (hangmanGame.currentMatchedLetters[i] != testChar) {
                         matched = false;
                         break;
                     }
                 }
 
-                console.log("matched is "+matched);
+                // console.log("matched is "+matched);
 
                 // Now, see if user has matched all the letters in targetWord
                 if (matched == true) {
                     // Victory!!
                     hangmanGame.thrillOfVictoryMsg="Congratulations, you won!!";
                     hangmanGame.winCount++;
-                    console.log("hangmanGame.winCount "+hangmanGame.winCount);
+                    
                     $("#winnerDiv").text(hangmanGame.thrillOfVictoryMsg);
                     $("#nextPrompt").text("Press any key to continue");
                     localStorage.setItem("resetGame","yes");
                 }
-            } else { //else the key the user entered was not found in targetMessage
-                console.log("Skunked on "+hangmanGame.currentGuess);
-                $("#loserDiv").text("The key "+hangmanGame.currentGuess+" did not match -- try again");
+            } else { 
+                // logic to handle non-match
+                // console.log("totalMatchesCount is "+hangmanGame.totalMatchesCount);
+                if (hangmanGame.totalMatchesCount > 0) {
+                 $("#loserDiv").text("The key "+hangmanGame.currentGuess+" did not match -- try again");
+                }
             }
           }
         } else {
-          console.log("Got to enter an alphabetic key, try again");
+          //console.log("Got to enter an alphabetic key, try again");
+          
           $("#loserDiv").text("Try again by entering an alphabetic key or a space");
         }
 
 }
+
