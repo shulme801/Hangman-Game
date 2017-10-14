@@ -139,7 +139,7 @@ window.onload = function () {
     hangmanGame.getTargetWord();
     guessesRemaining = hangmanGame.guessLimit;
     // And now display the initial values
-    $("#hangmanGame").html("<h2>1950's Doowop Hangman!</h2>");
+    // $("#hangmanGame").html("<h2>1950's Doowop Hangman!</h2>");
     
     $("#winsDiv").text("Wins So Far: "+hangmanGame.winCount);
     $("#wordDiv").text("Current Word: "+hangmanGame.currentMatchedLetters);
